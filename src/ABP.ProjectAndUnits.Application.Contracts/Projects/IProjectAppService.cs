@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Volo.Abp.Application.Dtos;
+
+namespace ABP.ProjectAndUnits.Projects
+{
+    public interface IProjectAppService
+    {
+        Task<ProjectDto> CreateProjectAsync(CreateProjectDto dto);
+        Task<ProjectDto> UpdateProjectAsync(UpdateProjectDto dto);
+
+        Task<string> DeleteProjectAsync(Guid Id);
+
+        Task<PagedResultDto<ProjectDto>> GetAllProjectsAsync(GetProjectListDto listDto);
+
+        
+    }
+}
