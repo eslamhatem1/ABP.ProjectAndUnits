@@ -1,4 +1,5 @@
 ﻿using ABP.ProjectAndUnits.Aggregates.ProjectAggregate;
+using ABP.ProjectAndUnits.Base;
 using ABP.ProjectAndUnits.DominServices.ProjectServices;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,10 +10,9 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 namespace ABP.ProjectAndUnits.Projects
 {
-    public class ProjectAppService : ApplicationService, IProjectAppService
+    public class ProjectAppService : BaseApplicationService, IProjectAppService
     {
         private IRepository<Project, Guid> _repository { get; }
         private ProjectManger _projectManger { get; }
@@ -25,14 +25,19 @@ namespace ABP.ProjectAndUnits.Projects
 
         public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto input)
         {
+            var validationResult = new CreateProjectValidator().Validate(input);
+
+            if (!validationResult.IsValid)
+            {
+                var execption= GetValidationException(validationResult);
+                throw execption;
+            }
 
             var project = await _projectManger.createproject(input.Name, input.ProjectCode, input.Descrption, input.ProjectLocation, input.NumberOfUnits);
             if (input.Units.Count > 0)
             {
                 input.Units.ForEach(e => project.AddUnits(GuidGenerator.Create(), e.Descrption, e.Location, e.UnitArea, e.NumberOfRooms, project.Id));
-
             }
-
             await _repository.InsertAsync(project, autoSave: true);
 
             return ObjectMapper.Map<Project, ProjectDto>(project);
@@ -41,7 +46,7 @@ namespace ABP.ProjectAndUnits.Projects
 
         public async Task<string> DeleteProjectAsync(Guid Id)
         {
-            var project = await _repository.WithDetailsAsync(e=>e.Units).Result.FirstOrDefaultAsync(e=>e.Id == Id);
+            var project = await _repository.WithDetailsAsync(e => e.Units).Result.FirstOrDefaultAsync(e => e.Id == Id);
             if (project == null)
             {
                 return "هذا العنصر غير موجود";
@@ -71,12 +76,21 @@ namespace ABP.ProjectAndUnits.Projects
                 .ToListAsync();
 
 
-            var totalcount =listDto.Filter == null?await _repository.CountAsync():await _repository.CountAsync(p=>p.Name.Contains(listDto.Filter));
+            var totalcount = listDto.Filter == null ? await _repository.CountAsync() : await _repository.CountAsync(p => p.Name.Contains(listDto.Filter));
             return new PagedResultDto<ProjectDto>(totalcount, ObjectMapper.Map<List<Project>, List<ProjectDto>>(projects));
         }
 
         public async Task<ProjectDto> UpdateProjectAsync(UpdateProjectDto dto)
         {
+            var validationResult = new UpdateProjectValidator().Validate(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var execption = GetValidationException(validationResult);
+                throw execption;
+            }
+
+
             var project = await _repository.GetAsync(dto.Id);
             if (project == null)
             {
