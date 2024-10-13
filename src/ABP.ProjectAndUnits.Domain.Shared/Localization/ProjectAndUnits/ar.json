@@ -4,6 +4,21 @@
     "AppName": "ProjectAndUnits",
     "Menu:Home": "الصفحة الرئيسية",
     "Welcome": "مرحباً",
-    "LongWelcomeMessage": "مرحبا بكم في التطبيق. هذا مشروع بدء تشغيل يعتمد على إطار عمل ABP. لمزيد من المعلومات ، يرجى زيارة abp.io."
+    "LongWelcomeMessage": "مرحبا بكم في التطبيق. هذا مشروع بدء تشغيل يعتمد على إطار عمل ABP. لمزيد من المعلومات ، يرجى زيارة abp.io.",
+    "ItemNotFound ": "هذا العنصر غير موجود",
+    "CantDeleteThisItemBecauseToRelatedToUnit": "لا يمكن حذف المشروع لانه مرتبط بوحدات",
+    "DeletedSuccess": "تم الحذف بنجاح",
+    "item:required": " هذا الحقل اجبارى",
+    "ProjectMustConatin5Characters": "كود المشروع يجب ان يتكون من 5 حروف او ارقام",
+    "ProjectNameMustBetween2And100": "اسم المشروع يجب ان يكون من 2 الى 100",
+    "ItemGreaterThanzero": "قيمة العنصر يجب ان يكون اكبر من الصفر ",
+    "DescrptionNotExceed500": "لا يمكن ان يكون اكبر من 500 "
+
+
+
+
+
+
+
   }
 }

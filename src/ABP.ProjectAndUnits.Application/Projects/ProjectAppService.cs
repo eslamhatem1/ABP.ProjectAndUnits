@@ -1,12 +1,15 @@
 ﻿using ABP.ProjectAndUnits.Aggregates.ProjectAggregate;
 using ABP.ProjectAndUnits.Base;
 using ABP.ProjectAndUnits.DominServices.ProjectServices;
+using ABP.ProjectAndUnits.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -16,16 +19,19 @@ namespace ABP.ProjectAndUnits.Projects
     {
         private IRepository<Project, Guid> _repository { get; }
         private ProjectManger _projectManger { get; }
-        public ProjectAppService(IRepository<Project, Guid> repository, ProjectManger projectManger)
+        private readonly IStringLocalizer<ProjectAndUnitsResource> _localizer;
+
+        public ProjectAppService(IRepository<Project, Guid> repository, ProjectManger projectManger, IStringLocalizer<ProjectAndUnitsResource> localizer)
         {
             _repository = repository;
             _projectManger = projectManger;
+            _localizer = localizer;
         }
 
 
         public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto input)
         {
-            var validationResult = new CreateProjectValidator().Validate(input);
+            var validationResult = new CreateProjectValidator(_localizer).Validate(input);
 
             if (!validationResult.IsValid)
             {
@@ -49,13 +55,13 @@ namespace ABP.ProjectAndUnits.Projects
             var project = await _repository.WithDetailsAsync(e => e.Units).Result.FirstOrDefaultAsync(e => e.Id == Id);
             if (project == null)
             {
-                return "هذا العنصر غير موجود";
+                throw new UserFriendlyException(_localizer["ItemNotFound"]);
+
             }
             if (project.Units.Count() > 0)
-                return "لا يمكن حذف المشروع لانه مرتبط بوحدات";
-
+                throw new UserFriendlyException(_localizer["CantDeleteThisItemBecauseToRelatedToUnit"]);
             await _repository.DeleteAsync(project);
-            return "تم الحذف بنجاح";
+            return _localizer["DeletedSuccess"];
 
         }
 
@@ -82,7 +88,7 @@ namespace ABP.ProjectAndUnits.Projects
 
         public async Task<ProjectDto> UpdateProjectAsync(UpdateProjectDto dto)
         {
-            var validationResult = new UpdateProjectValidator().Validate(dto);
+            var validationResult = new UpdateProjectValidator(_localizer).Validate(dto);
 
             if (!validationResult.IsValid)
             {
@@ -94,7 +100,7 @@ namespace ABP.ProjectAndUnits.Projects
             var project = await _repository.GetAsync(dto.Id);
             if (project == null)
             {
-                throw new Exception("هذا العنصر غير موجود");
+                throw new UserFriendlyException(_localizer["ItemNotFound"]);
             }
             var updateproject = await _projectManger.updateProject(dto.Id, dto.Name, dto.ProjectCode, dto.Descrption, dto.ProjectLocation, dto.NumberOfUnits, project);
             if (dto.Units.Count > 0)

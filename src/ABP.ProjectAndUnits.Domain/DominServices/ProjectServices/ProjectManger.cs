@@ -19,7 +19,7 @@ namespace ABP.ProjectAndUnits.DominServices.ProjectServices
         {
             if (await _repository.AnyAsync(e => e.ProjectCode == projectcode))
             {
-                throw new ("thisProjectIsExist");
+                throw new BusinessException("thisProjectIsExist");
             }
            
             return new Project(GuidGenerator.Create(), name, projectcode, descrption, projectlocation, numberofunits);

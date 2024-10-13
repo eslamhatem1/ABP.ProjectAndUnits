@@ -4,6 +4,19 @@
     "AppName": "ProjectAndUnits",
     "Menu:Home": "Home",
     "Welcome": "Welcome",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io."
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
+    "ItemNotFound ": "ItemNotExist",
+    "CantDeleteThisItemBecauseToRelatedToUnit": "ThisItemCantDeletd",
+    "DeletedSuccess": "DeletedSuccess",
+    "item:required": "This Item Is required",
+    "ProjectMustConatin5Characters": "Project code must consist of 5 characters/numbers.",
+    "ProjectNameMustBetween2And100": "Name must be between 2 and 100 characters.",
+    "ItemGreaterThanzero": "Item must be greater than zero.",
+    "DescrptionNotExceed500": "Description cannot exceed 500 characters."
+
+
+
+
+
   }
 }

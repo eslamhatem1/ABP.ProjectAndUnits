@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using ABP.ProjectAndUnits.Localization;
+using FluentValidation;
+using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +11,20 @@ namespace ABP.ProjectAndUnits.Projects
 {
     public class CreateProjectValidator:AbstractValidator<CreateProjectDto>
     {
-        public CreateProjectValidator() 
+        public CreateProjectValidator(IStringLocalizer<ProjectAndUnitsResource> localizer) 
         {
             RuleFor(command => command.ProjectCode)
-           .NotEmpty().WithMessage("Project code is required.")
-           .Length(5).WithMessage("Project code must consist of 5 characters/numbers.")
-           .Matches("^[a-zA-Z0-9]{5}$").WithMessage("Project code must consist of letters and numbers only.");
+           .NotEmpty().WithMessage(localizer["item:required"])
+           .Length(5).WithMessage(localizer["ProjectMustConatin5Characters"]);
 
 
 
             RuleFor(command => command.Name)
-                .NotEmpty().WithMessage("Name is required.")
-                .Length(2, 100).WithMessage("Name must be between 2 and 100 characters.");
+           .NotEmpty().WithMessage(localizer["item:required"])
+                .Length(2, 100).WithMessage(localizer["ProjectNameMustBetween2And100"]);
 
             RuleFor(command => command.Descrption)
-                .MaximumLength(500).WithMessage("Description cannot exceed 500 characters.");
+                .MaximumLength(500).WithMessage(localizer["DescrptionNotExceed500"]);
 
 
 
@@ -35,13 +36,12 @@ namespace ABP.ProjectAndUnits.Projects
             RuleForEach(x => x.Units).ChildRules(unit =>
             {
                 unit.RuleFor(u => u.Descrption)
-               .NotEmpty().WithMessage("Description is required.");
-
+           .NotEmpty().WithMessage(localizer["item:required"]);
                 unit.RuleFor(u => u.UnitArea)
-                    .GreaterThan(0).WithMessage("Area must be greater than zero.");
+                    .GreaterThan(0).WithMessage(localizer["ItemGreaterThanzero"]);
 
                 unit.RuleFor(u => u.NumberOfRooms)
-                    .GreaterThan(0).WithMessage("Number of rooms must be greater than zero.");
+                    .GreaterThan(0).WithMessage(localizer["ItemGreaterThanzero"]);
             });
 
 
