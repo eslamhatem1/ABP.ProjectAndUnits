@@ -14,11 +14,9 @@ namespace ABP.ProjectAndUnits.Mapping
     {
         public MappingProfile()
         {
-              CreateMap<CreateProjectDto, Project>()
-                .ForMember(dest => dest.Units, opt => opt.MapFrom(src => src.Units))
-                .ReverseMap();
-            CreateMap<Project, ProjectDto>().ReverseMap();
-            CreateMap<CreateUnitDto, Project>().ReverseMap();
+           
+
+
 
         }
     }

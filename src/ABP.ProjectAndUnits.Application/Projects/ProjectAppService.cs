@@ -2,6 +2,7 @@
 using ABP.ProjectAndUnits.Base;
 using ABP.ProjectAndUnits.DominServices.ProjectServices;
 using ABP.ProjectAndUnits.Localization;
+using ABP.ProjectAndUnits.Units;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using System;
@@ -13,6 +14,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.ObjectMapping;
 namespace ABP.ProjectAndUnits.Projects
 {
     public class ProjectAppService : BaseApplicationService, IProjectAppService
@@ -39,11 +41,9 @@ namespace ABP.ProjectAndUnits.Projects
                 throw execption;
             }
 
-            var project = await _projectManger.createproject(input.Name, input.ProjectCode, input.Descrption, input.ProjectLocation, input.NumberOfUnits);
-            if (input.Units.Count > 0)
-            {
-                input.Units.ForEach(e => project.AddUnits(GuidGenerator.Create(), e.Descrption, e.Location, e.UnitArea, e.NumberOfRooms, project.Id));
-            }
+            var Units = ObjectMapper.Map<List<CreateUnitDto>, List<Unit>>(input.Units);
+            var project = await _projectManger.createproject(input.Name, input.ProjectCode, input.Descrption, input.ProjectLocation, input.NumberOfUnits, Units);
+
             await _repository.InsertAsync(project, autoSave: true);
 
             return ObjectMapper.Map<Project, ProjectDto>(project);
@@ -52,16 +52,8 @@ namespace ABP.ProjectAndUnits.Projects
 
         public async Task<string> DeleteProjectAsync(Guid Id)
         {
-            var project = await _repository.WithDetailsAsync(e => e.Units).Result.FirstOrDefaultAsync(e => e.Id == Id);
-            if (project == null)
-            {
-                throw new UserFriendlyException(_localizer["ItemNotFound"]);
-
-            }
-            if (project.Units.Count() > 0)
-                throw new UserFriendlyException(_localizer["CantDeleteThisItemBecauseToRelatedToUnit"]);
-            await _repository.DeleteAsync(project);
-            return _localizer["DeletedSuccess"];
+             await _projectManger.DeleteProject(Id);
+             return _localizer["DeletedSuccess"];
 
         }
 
@@ -89,48 +81,20 @@ namespace ABP.ProjectAndUnits.Projects
         public async Task<ProjectDto> UpdateProjectAsync(UpdateProjectDto dto)
         {
             var validationResult = new UpdateProjectValidator(_localizer).Validate(dto);
-
             if (!validationResult.IsValid)
             {
                 var execption = GetValidationException(validationResult);
                 throw execption;
             }
-
-
             var project = await _repository.GetAsync(dto.Id);
             if (project == null)
             {
                 throw new UserFriendlyException(_localizer["ItemNotFound"]);
             }
-            var updateproject = await _projectManger.updateProject(dto.Id, dto.Name, dto.ProjectCode, dto.Descrption, dto.ProjectLocation, dto.NumberOfUnits, project);
-            if (dto.Units.Count > 0)
-            {
+            var Units = ObjectMapper.Map<List<UpdateUnitDto>, List<Unit>>(dto.Units);
 
-                var unitsToRemove = project.Units.Where(u => !dto.Units.Any(updatedUnit => updatedUnit.Id == u.Id)).ToList();
-                foreach (var unit in unitsToRemove)
-                {
-                    project.RemoveUnit(unit);
-                }
-
-                var unitsToAdd = project.Units.Where(updatedUnit => !project.Units.Any(u => u.Id == updatedUnit.Id)).ToList();
-                foreach (var unit in unitsToAdd)
-                {
-                    project.AddUnit(unit);
-                }
-
-                foreach (var existingUnit in project.Units)
-                {
-                    var updatedUnit = dto.Units.SingleOrDefault(u => u.Id == existingUnit.Id);
-                    if (updatedUnit != null)
-                    {
-                        existingUnit.Update(updatedUnit.Descrption, updatedUnit.Location, updatedUnit.UnitArea, updatedUnit.NumberOfRooms);
-                    }
-                }
-
-
-            }
-            await _repository.UpdateAsync(project, autoSave: true);
-
+            var updateproject = await _projectManger.updateProject(dto.Id, dto.Name, dto.ProjectCode, dto.Descrption, dto.ProjectLocation, dto.NumberOfUnits, project, Units);
+           
             return ObjectMapper.Map<Project, ProjectDto>(project);
 
         }
